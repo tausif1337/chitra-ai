@@ -1,8 +1,9 @@
-import { screen, waitFor } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ApiError, api, getAccessToken } from "../../lib/api";
+import * as demo from "../../lib/demo";
 import { makeUser, renderWithProviders } from "../../test/utils";
 import { LoginPage } from "./LoginPage";
 import { ProtectedRoute } from "./ProtectedRoute";
@@ -66,6 +67,58 @@ describe("sign in", () => {
 
     await screen.findByRole("alert");
     expect(screen.getByLabelText(/email/i)).toHaveValue("painter@example.com");
+  });
+});
+
+describe("demo account on the sign-in page", () => {
+  it("is hidden when no demo account is configured", () => {
+    vi.spyOn(demo, "getDemoAccount").mockReturnValue(null);
+    renderWithProviders(<LoginPage />);
+    expect(
+      screen.queryByRole("button", { name: /use demo account/i }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("signs in with the demo credentials in one click", async () => {
+    vi.spyOn(demo, "getDemoAccount").mockReturnValue({
+      email: "demo@chitra.ai",
+      password: "demo-password-123",
+    });
+    const login = vi
+      .spyOn(api, "login")
+      .mockResolvedValue({ access: "token-abc", user: makeUser() });
+
+    const user = userEvent.setup();
+    renderWithProviders(<LoginPage />);
+    await user.click(screen.getByRole("button", { name: /use demo account/i }));
+
+    await waitFor(() =>
+      expect(login).toHaveBeenCalledWith({
+        email: "demo@chitra.ai",
+        password: "demo-password-123",
+      }),
+    );
+  });
+
+  it("leaves the fields populated when the demo sign-in fails", async () => {
+    vi.spyOn(demo, "getDemoAccount").mockReturnValue({
+      email: "demo@chitra.ai",
+      password: "demo-password-123",
+    });
+    vi.spyOn(api, "login").mockRejectedValue(
+      new ApiError(0, "network_error", "Could not reach Chitra AI."),
+    );
+
+    const user = userEvent.setup();
+    renderWithProviders(<LoginPage />);
+    await user.click(screen.getByRole("button", { name: /use demo account/i }));
+
+    await screen.findByRole("alert");
+    // Scope to the form: the demo card adds "Copy demo email"/"Copy demo
+    // password" buttons that also match /email/i and /password/i.
+    const form = screen.getByRole("form", { name: /sign in/i });
+    expect(within(form).getByLabelText(/email/i)).toHaveValue("demo@chitra.ai");
+    expect(within(form).getByLabelText(/password/i)).toHaveValue("demo-password-123");
   });
 });
 

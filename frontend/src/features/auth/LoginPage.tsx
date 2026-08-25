@@ -7,7 +7,9 @@ import { Field } from "../../components/ui/Field";
 import { TextInput } from "../../components/ui/TextInput";
 import { ApiError } from "../../lib/api";
 import { useAuth } from "../../lib/auth";
+import { getDemoAccount, type DemoAccount } from "../../lib/demo";
 import { AuthLayout } from "./AuthLayout";
+import { DemoAccountCard } from "./DemoAccountCard";
 
 export function LoginPage() {
   const { login, status } = useAuth();
@@ -18,18 +20,18 @@ export function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<ApiError | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const demoAccount = getDemoAccount();
 
   if (status === "authenticated") {
     const from = (location.state as { from?: string } | null)?.from ?? "/";
     return <Navigate to={from} replace />;
   }
 
-  async function onSubmit(event: FormEvent) {
-    event.preventDefault();
+  async function signIn(withEmail: string, withPassword: string) {
     setError(null);
     setSubmitting(true);
     try {
-      await login(email.trim(), password);
+      await login(withEmail.trim(), withPassword);
       const from = (location.state as { from?: string } | null)?.from ?? "/";
       navigate(from, { replace: true });
     } catch (caught) {
@@ -41,6 +43,19 @@ export function LoginPage() {
     } finally {
       setSubmitting(false);
     }
+  }
+
+  function onSubmit(event: FormEvent) {
+    event.preventDefault();
+    void signIn(email, password);
+  }
+
+  // Fill the fields as well as submitting, so a failure leaves the user with a
+  // populated form to retry rather than an empty one.
+  function useDemoAccount(account: DemoAccount) {
+    setEmail(account.email);
+    setPassword(account.password);
+    void signIn(account.email, account.password);
   }
 
   // A 401 here means bad credentials, not an expired session; say so plainly
@@ -65,7 +80,7 @@ export function LoginPage() {
         </>
       }
     >
-      <form onSubmit={onSubmit} noValidate className="flex flex-col gap-4">
+      <form onSubmit={onSubmit} noValidate aria-label="Sign in" className="flex flex-col gap-4">
         {formError && <Alert tone="error">{formError}</Alert>}
 
         <Field label="Email" error={error?.fieldError("email")} required>
@@ -114,6 +129,16 @@ export function LoginPage() {
           Sign in
         </Button>
       </form>
+
+      {demoAccount && (
+        <div className="mt-4">
+          <DemoAccountCard
+            account={demoAccount}
+            onUse={useDemoAccount}
+            disabled={submitting}
+          />
+        </div>
+      )}
     </AuthLayout>
   );
 }
