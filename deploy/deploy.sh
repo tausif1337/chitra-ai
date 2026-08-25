@@ -53,9 +53,17 @@ log "Collecting static files"
 log "Restarting the application"
 sudo /usr/bin/systemctl restart chitra-api
 
+# gunicorn is reached directly here, bypassing nginx, so the two headers nginx
+# would normally add must be supplied by hand:
+#   Host              ALLOWED_HOSTS holds the domain, not 127.0.0.1, so without
+#                     it Django answers 400 DisallowedHost.
+#   X-Forwarded-Proto SECURE_SSL_REDIRECT is on and SECURE_PROXY_SSL_HEADER
+#                     trusts this header, so without it Django answers 301.
+HEALTH_HEADERS=(-H "Host: ${DOMAIN}" -H "X-Forwarded-Proto: https")
+
 # Give gunicorn a moment to bind before deciding it failed.
 for attempt in 1 2 3 4 5 6 7 8 9 10; do
-  if curl -fsS --max-time 5 "http://127.0.0.1:${GUNICORN_PORT}/api/health/" >/dev/null 2>&1; then
+  if curl -fsS --max-time 5 "${HEALTH_HEADERS[@]}" "http://127.0.0.1:${GUNICORN_PORT}/api/health/" >/dev/null 2>&1; then
     log "Deployed ${NEW_REV} successfully"
     exit 0
   fi

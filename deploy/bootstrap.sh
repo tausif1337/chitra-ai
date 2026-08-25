@@ -49,14 +49,43 @@ echo "    site user, htdocs, and port look right"
 # --- 1. System packages ----------------------------------------------------
 log "Installing system packages"
 export DEBIAN_FRONTEND=noninteractive
-apt-get update -qq
-apt-get install -y -qq \
-  python3-venv python3-dev build-essential \
-  postgresql postgresql-contrib libpq-dev \
-  git curl >/dev/null
-echo "    done"
 
-systemctl enable --now postgresql >/dev/null 2>&1 || true
+# Only install what is genuinely missing. This host may already run PostgreSQL
+# for other sites, and `apt-get install postgresql` resolves to whichever major
+# version the configured repositories currently default to -- on a box using
+# the PGDG repository that is a NEWER major than the running cluster. That
+# would install a second server and upgrade postgresql-common, which restarts
+# every existing cluster. Other sites' databases live here, so that is not an
+# acceptable side effect of setting this one up.
+#
+# psycopg[binary] ships its own libpq, so libpq-dev is not needed to build it.
+REQUIRED_PKGS="python3-venv python3-dev build-essential git curl"
+
+MISSING=""
+for pkg in ${REQUIRED_PKGS}; do
+  dpkg-query -W -f='${Status}' "${pkg}" 2>/dev/null | grep -q "install ok installed" \
+    || MISSING="${MISSING} ${pkg}"
+done
+
+if [ -n "${MISSING}" ]; then
+  echo "    installing:${MISSING}"
+  apt-get update -qq
+  apt-get install -y -qq ${MISSING} >/dev/null
+else
+  echo "    all required packages already installed"
+fi
+
+# PostgreSQL server: use whatever is already running. Only install a server if
+# this box has none at all.
+if sudo -u postgres psql -tAc 'SELECT 1' >/dev/null 2>&1; then
+  PG_VERSION="$(sudo -u postgres psql -tAc 'SHOW server_version' 2>/dev/null | tr -d ' ')"
+  echo "    using the PostgreSQL server already on this host (${PG_VERSION})"
+else
+  warn "No running PostgreSQL server found. Installing one."
+  apt-get update -qq
+  apt-get install -y -qq postgresql postgresql-contrib >/dev/null
+  systemctl enable --now postgresql >/dev/null 2>&1 || true
+fi
 
 # --- 2. Database -----------------------------------------------------------
 log "Configuring PostgreSQL"
@@ -224,7 +253,14 @@ echo "    done"
 
 # --- 11. Local health check ------------------------------------------------
 log "Health check"
-if curl -fsS --max-time 10 "http://127.0.0.1:${GUNICORN_PORT}/api/health/" >/dev/null; then
+# gunicorn is reached directly here, bypassing nginx, so the two headers nginx
+# would normally add must be supplied by hand:
+#   Host              ALLOWED_HOSTS holds the domain, not 127.0.0.1, so without
+#                     it Django answers 400 DisallowedHost.
+#   X-Forwarded-Proto SECURE_SSL_REDIRECT is on and SECURE_PROXY_SSL_HEADER
+#                     trusts this header, so without it Django answers 301.
+HEALTH_HEADERS=(-H "Host: ${DOMAIN}" -H "X-Forwarded-Proto: https")
+if curl -fsS --max-time 10 "${HEALTH_HEADERS[@]}" "http://127.0.0.1:${GUNICORN_PORT}/api/health/" >/dev/null; then
   echo "    gunicorn is answering on 127.0.0.1:${GUNICORN_PORT}"
 else
   die "gunicorn is not answering. Check: journalctl -u chitra-api -n 50"
