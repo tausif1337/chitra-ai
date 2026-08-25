@@ -1,0 +1,119 @@
+import { useState, type FormEvent } from "react";
+import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
+
+import { Alert } from "../../components/ui/Alert";
+import { Button } from "../../components/ui/Button";
+import { Field } from "../../components/ui/Field";
+import { TextInput } from "../../components/ui/TextInput";
+import { ApiError } from "../../lib/api";
+import { useAuth } from "../../lib/auth";
+import { AuthLayout } from "./AuthLayout";
+
+export function LoginPage() {
+  const { login, status } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState<ApiError | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+
+  if (status === "authenticated") {
+    const from = (location.state as { from?: string } | null)?.from ?? "/";
+    return <Navigate to={from} replace />;
+  }
+
+  async function onSubmit(event: FormEvent) {
+    event.preventDefault();
+    setError(null);
+    setSubmitting(true);
+    try {
+      await login(email.trim(), password);
+      const from = (location.state as { from?: string } | null)?.from ?? "/";
+      navigate(from, { replace: true });
+    } catch (caught) {
+      setError(
+        caught instanceof ApiError
+          ? caught
+          : new ApiError(0, "error", "Something went wrong. Please try again."),
+      );
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  // A 401 here means bad credentials, not an expired session; say so plainly
+  // and never reveal which of the two fields was wrong.
+  const formError =
+    error && error.status === 401
+      ? "That email and password do not match an account."
+      : error && Object.keys(error.fieldErrors).length === 0
+        ? error.message
+        : null;
+
+  return (
+    <AuthLayout
+      title="Sign in"
+      subtitle="Pick up where you left off, with your full generation history."
+      footer={
+        <>
+          New to Chitra AI?{" "}
+          <Link to="/register" className="font-medium text-accent hover:underline">
+            Create an account
+          </Link>
+        </>
+      }
+    >
+      <form onSubmit={onSubmit} noValidate className="flex flex-col gap-4">
+        {formError && <Alert tone="error">{formError}</Alert>}
+
+        <Field label="Email" error={error?.fieldError("email")} required>
+          {({ id, describedBy, invalid }) => (
+            <TextInput
+              id={id}
+              aria-describedby={describedBy}
+              invalid={invalid}
+              type="email"
+              name="email"
+              autoComplete="email"
+              autoFocus
+              required
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              placeholder="you@example.com"
+            />
+          )}
+        </Field>
+
+        <Field label="Password" error={error?.fieldError("password")} required>
+          {({ id, describedBy, invalid }) => (
+            <TextInput
+              id={id}
+              aria-describedby={describedBy}
+              invalid={invalid}
+              type="password"
+              name="password"
+              autoComplete="current-password"
+              required
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+            />
+          )}
+        </Field>
+
+        <Button
+          type="submit"
+          variant="primary"
+          size="lg"
+          fullWidth
+          loading={submitting}
+          loadingLabel="Signing in..."
+          disabled={!email.trim() || !password}
+        >
+          Sign in
+        </Button>
+      </form>
+    </AuthLayout>
+  );
+}

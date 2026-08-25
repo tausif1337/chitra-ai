@@ -1,0 +1,142 @@
+@import "tailwindcss";
+@import "./tokens.css";
+
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    border-color: var(--chitra-border);
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    margin: 0;
+    min-height: 100dvh;
+    background-color: var(--chitra-canvas);
+    color: var(--chitra-text);
+    font-family: var(--chitra-font-sans);
+    font-size: var(--chitra-text-base);
+    line-height: var(--chitra-leading-normal);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1, h2, h3, h4 {
+    margin: 0;
+    line-height: var(--chitra-leading-tight);
+    letter-spacing: var(--chitra-tracking-tight);
+    font-weight: 600;
+  }
+
+  p { margin: 0; }
+
+  /* PRD 9.9: focus must always be visible, and it is the same shape on every
+     control so keyboard users learn it once. */
+  :focus-visible {
+    outline: 2px solid var(--chitra-focus);
+    outline-offset: 2px;
+    border-radius: var(--chitra-radius-sm);
+  }
+
+  /* Mouse users do not get an outline, but nothing loses focus silently. */
+  :focus:not(:focus-visible) { outline: none; }
+
+  button, input, textarea, select {
+    font: inherit;
+    color: inherit;
+  }
+
+  button:not(:disabled) { cursor: pointer; }
+
+  img { display: block; max-width: 100%; height: auto; }
+
+  ::selection {
+    background: var(--chitra-accent-soft);
+    color: var(--chitra-text);
+  }
+
+  /* PRD 9.9: reduced motion support. Transitions collapse to a near-instant
+     step rather than being removed, so state changes are still perceptible. */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer components {
+  /* Skip link: first tab stop on every page. */
+  .chitra-skip-link {
+    position: absolute;
+    left: 0.75rem;
+    top: -100%;
+    z-index: 100;
+    padding: 0.625rem 1rem;
+    border-radius: var(--chitra-radius-md);
+    background: var(--chitra-accent);
+    color: var(--chitra-accent-fg);
+    font-size: var(--chitra-text-sm);
+    font-weight: 600;
+    transition: top var(--chitra-duration-fast) var(--chitra-ease);
+  }
+  .chitra-skip-link:focus {
+    top: 0.75rem;
+  }
+
+  /* Checkerboard behind a transparent image so alpha is visible. */
+  .chitra-alpha-grid {
+    background-image:
+      linear-gradient(45deg, var(--chitra-inset) 25%, transparent 25%),
+      linear-gradient(-45deg, var(--chitra-inset) 25%, transparent 25%),
+      linear-gradient(45deg, transparent 75%, var(--chitra-inset) 75%),
+      linear-gradient(-45deg, transparent 75%, var(--chitra-inset) 75%);
+    background-size: 16px 16px;
+    background-position: 0 0, 0 8px, 8px -8px, -8px 0;
+  }
+}
+
+@layer utilities {
+  .chitra-shimmer {
+    position: relative;
+    overflow: hidden;
+  }
+  .chitra-shimmer::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(
+      90deg,
+      transparent,
+      color-mix(in srgb, var(--chitra-text) 7%, transparent),
+      transparent
+    );
+    animation: chitra-sweep 1.6s var(--chitra-ease) infinite;
+  }
+
+  @keyframes chitra-sweep {
+    100% { transform: translateX(100%); }
+  }
+
+  @keyframes chitra-rise {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: none; }
+  }
+
+  .chitra-rise {
+    animation: chitra-rise var(--chitra-duration-slow) var(--chitra-ease) both;
+  }
+
+  @keyframes chitra-spin {
+    to { transform: rotate(360deg); }
+  }
+}

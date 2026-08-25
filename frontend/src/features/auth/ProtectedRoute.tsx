@@ -1,0 +1,26 @@
+import { Navigate, useLocation } from "react-router-dom";
+import type { ReactNode } from "react";
+
+import { Spinner } from "../../components/ui/Spinner";
+import { useAuth } from "../../lib/auth";
+
+export function ProtectedRoute({ children }: { children: ReactNode }) {
+  const { status } = useAuth();
+  const location = useLocation();
+
+  // Session restoration is still in flight. Showing the sign-in screen here
+  // would flash it at users who are in fact signed in.
+  if (status === "loading") {
+    return (
+      <div className="flex min-h-dvh items-center justify-center bg-canvas">
+        <Spinner size={22} label="Restoring your session" />
+      </div>
+    );
+  }
+
+  if (status === "anonymous") {
+    return <Navigate to="/login" replace state={{ from: location.pathname }} />;
+  }
+
+  return <>{children}</>;
+}
