@@ -61,7 +61,7 @@ SSH in as root and run the bootstrap once:
 ssh root@72.62.124.221
 
 REPO_URL=https://github.com/YOUR_USER/chitra-ai.git \
-  bash <(curl -fsSL https://raw.githubusercontent.com/YOUR_USER/chitra-ai/main/deploy/bootstrap.sh)
+  bash <(curl -fsSL https://raw.githubusercontent.com/YOUR_USER/chitra-ai/master/deploy/bootstrap.sh)
 ```
 
 Or, if you would rather read it first (recommended — it is 260 lines and it
@@ -213,7 +213,7 @@ backend pytest against a PostgreSQL service container, a missing-migration
 check, frontend typecheck + vitest + production build, and a secret scan that
 fails the build if a real `hf_…` token or a tracked `.env` appears.
 
-**`.github/workflows/deploy.yml`** runs on push to `main`:
+**`.github/workflows/deploy.yml`** runs on push to `master`:
 
 ```
 test ──┬─→ backend  (ssh → /home/chitra-ai/deploy.sh → health check)
@@ -294,7 +294,7 @@ convenience setting. Keep it exact and minimal.**
 
 ## Routine deploys
 
-Push to `main`. That is the whole procedure.
+Push to `master`. That is the whole procedure.
 
 To deploy by hand:
 

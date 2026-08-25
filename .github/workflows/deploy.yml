@@ -2,7 +2,7 @@ name: Deploy
 
 on:
   push:
-    branches: [main]
+    branches: [master]
   workflow_dispatch:
 
 # Never let two deploys overlap. In-progress runs finish rather than being
@@ -180,6 +180,26 @@ jobs:
         # VITE_API_BASE_URL comes from the Vercel project's environment
         # variables, which `vercel pull` just fetched.
         run: vercel build --prod
+
+      - name: Assert the API origin was baked in
+        # Vite substitutes import.meta.env at build time, so a missing variable
+        # does not fail the build -- it silently falls back to the localhost
+        # default in src/lib/api.ts and ships a frontend that talks to nobody.
+        #
+        # The most common cause is the variable being marked "Sensitive" in
+        # Vercel: `vercel env pull` then returns the literal "[SENSITIVE]"
+        # instead of the value. An API origin is public (it ends up in the
+        # client bundle regardless), so it must be stored as non-sensitive.
+        run: |
+          if grep -rqF 'http://localhost:8000' .vercel/output/static/assets/*.js; then
+            echo "::error::Bundle fell back to http://localhost:8000. Check that VITE_API_BASE_URL is set and NOT marked Sensitive in the Vercel project."
+            exit 1
+          fi
+          if ! grep -rqF "${API_ORIGIN}" .vercel/output/static/assets/*.js; then
+            echo "::error::Bundle does not reference ${API_ORIGIN}."
+            exit 1
+          fi
+          echo "Bundle targets ${API_ORIGIN}"
 
       - name: Deploy
         run: vercel deploy --prebuilt --prod

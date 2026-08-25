@@ -4,7 +4,7 @@ on:
   push:
     branches: ["**"]
   pull_request:
-    branches: [main]
+    branches: [master]
 
 # A newer push to the same branch cancels the older run.
 concurrency:

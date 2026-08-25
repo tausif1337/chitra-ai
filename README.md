@@ -42,7 +42,7 @@ meaningful filename or regenerated later.
 | API | `https://chitra-ai.devtechguru.cloud` |
 | Images | `https://chitra-ai.devtechguru.cloud/media/…` |
 
-Push to `main` runs the full suite, then deploys the backend to the VPS over
+Push to `master` runs the full suite, then deploys the backend to the VPS over
 SSH and the frontend to Vercel. Nothing ships unless the tests pass.
 
 ---
@@ -302,7 +302,7 @@ Short version, once:
 3. Paste `deploy/cloudpanel-vhost.conf` into the CloudPanel vhost, issue TLS
 4. Add the GitHub secrets, add the domain in Vercel
 
-After that, `git push origin main`.
+After that, `git push origin master`.
 
 ## Design system
 

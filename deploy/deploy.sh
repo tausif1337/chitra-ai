@@ -29,7 +29,7 @@ PREVIOUS_REV="$(git rev-parse --short HEAD)"
 
 log "Pulling latest code"
 git fetch --quiet origin
-git reset --hard --quiet origin/main
+git reset --hard --quiet origin/master
 NEW_REV="$(git rev-parse --short HEAD)"
 echo "    ${PREVIOUS_REV} -> ${NEW_REV}"
 
