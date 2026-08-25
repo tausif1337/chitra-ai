@@ -68,7 +68,6 @@ jobs:
         working-directory: frontend
         run: |
           npm ci
-          npm run typecheck
           npm test
 
   # ---------------------------------------------------------------------------
@@ -184,7 +183,7 @@ jobs:
       - name: Assert the API origin was baked in
         # Vite substitutes import.meta.env at build time, so a missing variable
         # does not fail the build -- it silently falls back to the localhost
-        # default in src/lib/api.ts and ships a frontend that talks to nobody.
+        # default in src/lib/api.js and ships a frontend that talks to nobody.
         #
         # The most common cause is the variable being marked "Sensitive" in
         # Vercel: `vercel env pull` then returns the literal "[SENSITIVE]"

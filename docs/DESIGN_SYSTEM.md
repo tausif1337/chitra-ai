@@ -141,7 +141,7 @@ than being removed. A state change still happens — it just does not travel.
 
 ## 6. Iconography
 
-A local inline set, [`components/ui/Icons.tsx`](../frontend/src/components/ui/Icons.tsx).
+A local inline set, [`components/ui/Icons.jsx`](../frontend/src/components/ui/Icons.jsx).
 24px viewBox, 1.6 stroke, round caps and joins, `currentColor` fill. Rendered
 at 14–18px. Every icon is `aria-hidden`; an icon-only control carries a
 required `label` prop that becomes both `aria-label` and `title`.
@@ -152,17 +152,17 @@ required `label` prop that becomes both `aria-label` and `title`.
 
 | Component | File |
 |---|---|
-| Button, IconButton | `ui/Button.tsx` |
-| Field (label + hint + error) | `ui/Field.tsx` |
-| TextInput, TextArea | `ui/TextInput.tsx`, `ui/TextArea.tsx` |
-| SegmentedControl | `ui/SegmentedControl.tsx` |
-| Card, CardHeader | `ui/Card.tsx` |
-| Dialog | `ui/Dialog.tsx` |
-| Alert | `ui/Alert.tsx` |
-| Toast | `ui/Toast.tsx` |
-| EmptyState | `ui/EmptyState.tsx` |
-| Skeleton | `ui/Skeleton.tsx` |
-| Spinner | `ui/Spinner.tsx` |
+| Button, IconButton | `ui/Button.jsx` |
+| Field (label + hint + error) | `ui/Field.jsx` |
+| TextInput, TextArea | `ui/TextInput.jsx`, `ui/TextArea.jsx` |
+| SegmentedControl | `ui/SegmentedControl.jsx` |
+| Card, CardHeader | `ui/Card.jsx` |
+| Dialog | `ui/Dialog.jsx` |
+| Alert | `ui/Alert.jsx` |
+| Toast | `ui/Toast.jsx` |
+| EmptyState | `ui/EmptyState.jsx` |
+| Skeleton | `ui/Skeleton.jsx` |
+| Spinner | `ui/Spinner.jsx` |
 
 ### Button variants
 

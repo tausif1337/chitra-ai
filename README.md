@@ -26,7 +26,7 @@ meaningful filename or regenerated later.
 
 | Layer | Choice |
 |---|---|
-| Frontend | React 19, TypeScript, Vite, Tailwind CSS v4, React Router |
+| Frontend | React 19, JavaScript, Vite, Tailwind CSS v4, React Router |
 | Backend | Django 6, Django REST Framework, SimpleJWT |
 | Database | PostgreSQL |
 | AI provider | Hugging Face Inference Providers (FLUX.1-schnell by default) |

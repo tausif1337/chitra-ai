@@ -210,7 +210,7 @@ ssh-keyscan -H 72.62.124.221
 
 **`.github/workflows/ci.yml`** runs on every branch and PR:
 backend pytest against a PostgreSQL service container, a missing-migration
-check, frontend typecheck + vitest + production build, and a secret scan that
+check, frontend vitest + production build, and a secret scan that
 fails the build if a real `hf_…` token or a tracked `.env` appears.
 
 **`.github/workflows/deploy.yml`** runs on push to `master`:
