@@ -1,0 +1,5 @@
+{
+  "permissions": {
+    "allow": ["Bash(ssh -i ~/.ssh/id_rsa root@72.62.124.221:*)"]
+  }
+}
