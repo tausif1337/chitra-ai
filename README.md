@@ -34,13 +34,6 @@ meaningful filename or regenerated later.
 | Hosting | Vercel (frontend), Hostinger VPS + CloudPanel (backend, database, media) |
 | CI/CD | GitHub Actions |
 
-## Deployed at
-
-| Piece | URL |
-|---|---|
-| App | `https://chitra-ai.technicalbind.com` |
-| API | `https://chitra-ai.devtechguru.cloud` |
-| Images | `https://chitra-ai.devtechguru.cloud/media/…` |
 
 Push to `master` runs the full suite, then deploys the backend to the VPS over
 SSH and the frontend to Vercel. Nothing ships unless the tests pass.
